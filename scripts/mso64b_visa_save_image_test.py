@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """
-One-step PyVISA test for saving an MSO64B screen image on the scope.
+Capture a Tektronix MSO64B screen image using PyVISA.
 
-This script uses pyvisa-py with the VISA resource discovered on the CREATE bench:
-    TCPIP::192.168.1.11::INSTR
+This script follows the documented SCPI method through a VISA resource:
 
-It does not read the image back to the computer. It only tests whether the scope
-accepts SAVE:IMAGE and completes the operation.
+1. Connect to the oscilloscope.
+2. Query *IDN?.
+3. Save the current screen image on the scope with SAVE:IMAGE.
+4. Wait for completion with *OPC?.
+
+The script intentionally leaves the image on the scope filesystem. A later script
+can add file readback once that procedure is documented and tested cleanly.
 """
 
 import argparse
@@ -15,19 +19,23 @@ import sys
 import pyvisa
 
 
+DEFAULT_RESOURCE = "TCPIP::192.168.1.11::INSTR"
+DEFAULT_SCOPE_PATH = "C:/CREATE_test.png"
+
+
 def build_argument_parser():
     parser = argparse.ArgumentParser(
         description="Use PyVISA to ask the MSO64B to save a screen image on the scope."
     )
     parser.add_argument(
         "--resource",
-        default="TCPIP::192.168.1.11::INSTR",
-        help="VISA resource string. Default: TCPIP::192.168.1.11::INSTR"
+        default=DEFAULT_RESOURCE,
+        help=f"VISA resource string. Default: {DEFAULT_RESOURCE}"
     )
     parser.add_argument(
         "--scope-path",
-        default="C:/CREATE_test.png",
-        help="Scope-side image path. Default: C:/CREATE_test.png"
+        default=DEFAULT_SCOPE_PATH,
+        help=f"Scope-side image path. Default: {DEFAULT_SCOPE_PATH}"
     )
     parser.add_argument(
         "--timeout-ms",
@@ -60,7 +68,7 @@ def main():
         print("ERROR: SAVE:IMAGE did not report completion.", file=sys.stderr)
         return 1
 
-    print("SAVE:IMAGE completed.")
+    print(f"Saved screen image on scope: {args.scope_path}")
     return 0
 
 
