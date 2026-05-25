@@ -39,7 +39,7 @@ Planned early tasks:
 1. Set up PyVISA access to the MSO64B.
 2. Connect Aria to the CREATE instrument network.
 3. Save the current screen image on the MSO64B using `SAVE:IMAGE`.
-4. Add file readback only after the PyVISA method is cleanly confirmed.
+4. Retrieve the saved screen image using `FILESystem:READFile`.
 5. Export a waveform for Python analysis.
 6. Configure a basic edge trigger.
 7. Configure a pulse-width trigger.

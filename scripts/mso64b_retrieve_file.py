@@ -29,23 +29,23 @@ def build_argument_parser():
     parser.add_argument(
         "--resource",
         default=DEFAULT_RESOURCE,
-        help=f"VISA resource string. Default: {DEFAULT_RESOURCE}"
+        help=f"VISA resource string. Default: {DEFAULT_RESOURCE}",
     )
     parser.add_argument(
         "--scope-path",
         default=DEFAULT_SCOPE_PATH,
-        help=f"Scope-side file path. Default: {DEFAULT_SCOPE_PATH}"
+        help=f"Scope-side file path. Default: {DEFAULT_SCOPE_PATH}",
     )
     parser.add_argument(
         "--output",
         default=DEFAULT_OUTPUT_PATH,
-        help=f"Local output path. Default: {DEFAULT_OUTPUT_PATH}"
+        help=f"Local output path. Default: {DEFAULT_OUTPUT_PATH}",
     )
     parser.add_argument(
         "--timeout-ms",
         type=int,
         default=10000,
-        help="VISA timeout in milliseconds. Default: 10000"
+        help="VISA timeout in milliseconds. Default: 10000",
     )
     return parser
 

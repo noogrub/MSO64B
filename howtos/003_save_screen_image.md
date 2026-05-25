@@ -44,8 +44,10 @@ Sending: SAVE:IMAGE "C:/CREATE_test.png"
 Saved screen image on scope: C:/CREATE_test.png
 ```
 
-## Notes
+## Next step
 
-This HOWTO intentionally stops at saving the image on the oscilloscope.
+Retrieve the saved file with:
 
-File readback to the computer should be added only after the readback procedure is confirmed cleanly through PyVISA and documented separately.
+```text
+howtos/004_retrieve_screen_image.md
+```

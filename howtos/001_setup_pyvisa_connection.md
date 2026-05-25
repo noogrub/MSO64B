@@ -48,4 +48,4 @@ TEKTRONIX,MSO64B,C062498,CF:91.1CT FV:2.16.15-release.3490
 
 The control computer can reach the MSO64B through the documented VISA-style interface.
 
-Use this PyVISA path for scripts in this repository.
+Use this PyVISA path for the scripts in this repository.

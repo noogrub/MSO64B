@@ -26,6 +26,7 @@ TEKTRONIX,MSO64B,C062498,CF:91.1CT FV:2.16.15-release.3490
 howtos/       Short task-focused instructions
 scripts/      Small Python utilities for repeatable instrument actions
 notes/        Lab context and project-level notes
+img/          Local retrieved images; ignored by git
 requirements.txt
 ```
 
@@ -35,10 +36,17 @@ Begin with:
 
 ```text
 howtos/001_setup_pyvisa_connection.md
-scripts/mso64b_save_image.py
+howtos/003_save_screen_image.md
+howtos/004_retrieve_screen_image.md
 ```
 
-The first scripted task connects to the MSO64B through PyVISA and saves the current screen image to the scope filesystem using the documented SCPI command `SAVE:IMAGE`.
+The confirmed screenshot path is:
+
+```text
+SAVE:IMAGE "C:/CREATE_test.png"
+FILESystem:READFile "C:/CREATE_test.png"
+local output: img/CREATE_test.png
+```
 
 ## Official Tektronix documentation
 

@@ -15,11 +15,10 @@ Working setup observed on the CREATE MSO64B:
 ```text
 Signal: MSO64B probe-comp output
 Channel: CH2
-Horizontal scale: 200 us/div
+Horizontal scale: 400 us/div
 Trigger mode: Normal
 Trigger source: CH2
 Trigger type: Edge
-Trigger level: about midpoint of waveform, roughly 125 mV
 Observed waveform: roughly 0 to 250 mV square wave
 ```
 
