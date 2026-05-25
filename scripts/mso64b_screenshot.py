@@ -28,37 +28,8 @@ def send_command(connection, command):
     connection.sendall(command.encode("ascii"))
 
 
-def drain_socket(connection, drain_timeout_seconds, debug_enabled):
-    """Drain stale response bytes left in the instrument socket queue."""
-    connection.settimeout(drain_timeout_seconds)
-    total_bytes = 0
-
-    while True:
-        try:
-            chunk = connection.recv(65536)
-        except socket.timeout:
-            break
-
-        if not chunk:
-            break
-
-        total_bytes = total_bytes + len(chunk)
-
-    if debug_enabled:
-        print(f"Drained stale bytes before command sequence: {total_bytes}")
-
-    return total_bytes
-
-
-def query_text(connection, command, timeout_seconds):
-    send_command(connection, command)
-    connection.settimeout(timeout_seconds)
-    response = connection.recv(65536)
-    return response.decode("utf-8", errors="replace").strip()
-
-
-def read_until_timeout(connection, timeout_seconds):
-    connection.settimeout(timeout_seconds)
+def read_until_timeout(connection, quiet_timeout_seconds):
+    connection.settimeout(quiet_timeout_seconds)
     chunks = []
 
     while True:
@@ -73,6 +44,49 @@ def read_until_timeout(connection, timeout_seconds):
         chunks.append(chunk)
 
     return b"".join(chunks)
+
+
+def read_text_until_timeout(connection, quiet_timeout_seconds):
+    data = read_until_timeout(connection, quiet_timeout_seconds)
+    return data.decode("utf-8", errors="replace").strip(), data
+
+
+def debug_preview(label, data, debug_enabled):
+    if not debug_enabled:
+        return
+
+    print(f"{label}: {len(data)} bytes")
+    if data:
+        print(f"{label} first 32 bytes: {data[:32]!r}")
+
+
+def drain_socket(connection, quiet_timeout_seconds, debug_enabled):
+    data = read_until_timeout(connection, quiet_timeout_seconds)
+    debug_preview("Drained stale socket data", data, debug_enabled)
+    return len(data)
+
+
+def synchronize_identity(connection, timeout_seconds, debug_enabled):
+    """Discard stale output until *IDN? returns the expected Tektronix identity."""
+    for attempt_number in range(1, 6):
+        drain_socket(connection, 1.0, debug_enabled)
+        send_command(connection, "*IDN?")
+        response_text, response_data = read_text_until_timeout(connection, timeout_seconds)
+
+        if response_text.startswith("TEKTRONIX,"):
+            return response_text
+
+        if debug_enabled:
+            print(f"Unexpected *IDN? response on attempt {attempt_number}: {response_text[:120]!r}")
+            debug_preview("Unexpected *IDN? raw response", response_data, debug_enabled)
+
+    raise RuntimeError("Could not synchronize with the oscilloscope identity response.")
+
+
+def query_text(connection, command, quiet_timeout_seconds):
+    send_command(connection, command)
+    response_text, unused_response_data = read_text_until_timeout(connection, quiet_timeout_seconds)
+    return response_text
 
 
 def strip_possible_scpi_block_header(data):
@@ -122,19 +136,18 @@ def capture_screenshot(hostname, port, output_path, scope_image_path, timeout_se
 
     with socket.create_connection((hostname, port), timeout=timeout_seconds) as connection:
         connection.settimeout(timeout_seconds)
-        drain_socket(connection, 0.25, debug_enabled)
 
-        identity = query_text(connection, "*IDN?", timeout_seconds)
+        identity = synchronize_identity(connection, timeout_seconds, debug_enabled)
         print(f"Connected to: {identity}")
 
         print(f"Saving image on scope as: {scope_image_path}")
         send_command(connection, f'SAVE:IMAGE "{scope_image_path}"')
-        operation_complete = query_text(connection, "*OPC?", timeout_seconds)
+        operation_complete = query_text(connection, "*OPC?", 1.0)
         print(f"*OPC? response after SAVE:IMAGE: {operation_complete}")
 
         time.sleep(0.5)
 
-        directory_listing = query_text(connection, "FILESystem:DIR?", timeout_seconds)
+        directory_listing = query_text(connection, "FILESystem:DIR?", 1.0)
         if os.path.basename(scope_image_path) in directory_listing:
             print("Scope-side file is visible in FILESystem:DIR?.")
         else:
@@ -145,18 +158,13 @@ def capture_screenshot(hostname, port, output_path, scope_image_path, timeout_se
         raw_data = read_until_timeout(connection, timeout_seconds)
 
     if debug_enabled:
-        print(f"Raw bytes received after READFile: {len(raw_data)}")
-        if raw_data:
-            preview = raw_data[:32]
-            print(f"First raw bytes: {preview!r}")
+        debug_preview("Raw bytes received after READFile", raw_data, debug_enabled)
 
     image_data = strip_possible_scpi_block_header(raw_data)
     image_data = trim_to_png_payload(image_data)
 
     if debug_enabled:
-        print(f"Bytes after header/PNG trimming: {len(image_data)}")
-        if image_data:
-            print(f"First trimmed bytes: {image_data[:32]!r}")
+        debug_preview("Bytes after header/PNG trimming", image_data, debug_enabled)
 
     if not image_data:
         raise RuntimeError("No image data was received from the oscilloscope.")
