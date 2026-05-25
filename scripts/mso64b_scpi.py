@@ -4,7 +4,7 @@ Send one SCPI command or query to a Tektronix MSO64B over Ethernet.
 
 Examples:
     python scripts/mso64b_scpi.py --host 192.168.1.11 --command '*IDN?'
-    python scripts/mso64b_scpi.py --host 192.168.1.11 --command 'SYSTEM:ERROR?'
+    python scripts/mso64b_scpi.py --host 192.168.1.11 --command 'ALLEV?'
 """
 
 import argparse
@@ -23,8 +23,15 @@ def send_scpi(hostname, port, command, timeout_seconds):
         if "?" not in command:
             return ""
 
-        response = connection.recv(4096)
+        response = connection.recv(65536)
         return response.decode("utf-8", errors="replace").strip()
+
+
+def print_safely(text):
+    """Print text even when the Windows console encoding cannot represent it."""
+    output_bytes = (text + "\n").encode(sys.stdout.encoding or "utf-8", errors="replace")
+    sys.stdout.buffer.write(output_bytes)
+    sys.stdout.buffer.flush()
 
 
 def build_argument_parser():
@@ -47,7 +54,7 @@ def main():
         return 1
 
     if response:
-        print(response)
+        print_safely(response)
 
     return 0
 
