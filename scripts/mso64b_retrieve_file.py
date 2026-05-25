@@ -11,11 +11,13 @@ Retrieval uses the documented SCPI command:
 
     FILESystem:READFile "<scope-side path>"
 
-Retrieved files are written under img/ by default. The img/ directory is
-ignored by git.
+Retrieved files and saved listings are written under img/ by default. The img/
+directory is ignored by git.
 """
 
 import argparse
+import datetime
+import json
 import os
 import sys
 
@@ -47,19 +49,60 @@ def build_output_path(scope_path, output_dir, output_path):
     return os.path.join(output_dir, filename)
 
 
-def print_directory_listing(raw_listing):
-    if not raw_listing:
-        print("No files returned.")
-        return
-
+def parse_directory_listing(raw_listing):
     entries = []
+
+    if not raw_listing:
+        return entries
+
     for item in raw_listing.split(","):
         clean_item = item.strip().strip('"')
         if clean_item:
             entries.append(clean_item)
 
+    return entries
+
+
+def print_directory_entries(entries):
+    if not entries:
+        print("No files returned.")
+        return
+
     for entry in entries:
         print(entry)
+
+
+def timestamp_string():
+    return datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+
+
+def build_listing_paths(output_dir):
+    timestamp = timestamp_string()
+    text_path = os.path.join(output_dir, f"{timestamp}_mso64b_directory_listing.txt")
+    json_path = os.path.join(output_dir, f"{timestamp}_mso64b_directory_listing.json")
+    return text_path, json_path
+
+
+def write_listing_files(output_dir, resource_name, scope_dir, entries):
+    os.makedirs(output_dir, exist_ok=True)
+
+    text_path, json_path = build_listing_paths(output_dir)
+
+    with open(text_path, "w", encoding="utf-8", newline="\n") as text_file:
+        for entry in entries:
+            text_file.write(entry + "\n")
+
+    listing_record = {
+        "resource": resource_name,
+        "scope_dir": scope_dir,
+        "files": entries,
+    }
+
+    with open(json_path, "w", encoding="utf-8", newline="\n") as json_file:
+        json.dump(listing_record, json_file, indent=2)
+        json_file.write("\n")
+
+    return text_path, json_path
 
 
 def build_argument_parser():
@@ -97,6 +140,11 @@ def build_argument_parser():
         help="List files in --scope-dir instead of retrieving a file."
     )
     parser.add_argument(
+        "--save-list",
+        action="store_true",
+        help="When used with --list, save the listing as text and JSON under --output-dir."
+    )
+    parser.add_argument(
         "--timeout-ms",
         type=int,
         default=10000,
@@ -121,7 +169,20 @@ def main():
         print(f"Listing scope directory: {scope_dir}")
         scope.write(f'FILESystem:CWD "{scope_dir}"')
         raw_listing = scope.query("FILESystem:DIR?").strip()
-        print_directory_listing(raw_listing)
+
+        entries = parse_directory_listing(raw_listing)
+        print_directory_entries(entries)
+
+        if args.save_list:
+            text_path, json_path = write_listing_files(
+                args.output_dir,
+                args.resource,
+                scope_dir,
+                entries,
+            )
+            print(f"Saved text listing: {text_path}")
+            print(f"Saved JSON listing: {json_path}")
+
         return 0
 
     if not args.scope_path:

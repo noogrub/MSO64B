@@ -1,21 +1,24 @@
 
 # Patch Notes
 
-This overlay updates the MSO64B PyVISA workflow.
+This overlay adds saved directory listings for the MSO64B retrieval workflow.
 
 ## Changes
 
-- `mso64b_save_image.py` now generates unique scope-side PNG filenames by default.
-- Generated names use `YYYYMMDD-HHMMSS_mso64b_<label>.png`.
-- `mso64b_retrieve_file.py` can list scope-side files with `--list`.
-- Retrieval writes to `img/` by default.
-- HOWTO 003 and HOWTO 004 document the save/list/retrieve workflow.
-- README now describes the unique screenshot naming pattern.
+- `mso64b_retrieve_file.py` now supports `--save-list` with `--list`.
+- Saved listings are written under `img/`.
+- The script writes both text and JSON listing files.
+- HOWTO 004 documents saved listings and the JSON structure.
 
-## Typical command sequence
+## Example
 
 ```powershell
-python scripts/mso64b_save_image.py --label probe-comp-ch2
-python scripts/mso64b_retrieve_file.py --list
-python scripts/mso64b_retrieve_file.py --scope-path "C:/YYYYMMDD-HHMMSS_mso64b_probe-comp-ch2.png"
+python scripts/mso64b_retrieve_file.py --list --save-list
+```
+
+Default outputs:
+
+```text
+img/YYYYMMDD-HHMMSS_mso64b_directory_listing.txt
+img/YYYYMMDD-HHMMSS_mso64b_directory_listing.json
 ```

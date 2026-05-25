@@ -36,6 +36,33 @@ To list a different scope-side directory:
 python scripts/mso64b_retrieve_file.py --list --scope-dir "C:/Temp"
 ```
 
+## Save a directory listing locally
+
+```powershell
+python scripts/mso64b_retrieve_file.py --list --save-list
+```
+
+This writes two local files under `img/`:
+
+```text
+img/YYYYMMDD-HHMMSS_mso64b_directory_listing.txt
+img/YYYYMMDD-HHMMSS_mso64b_directory_listing.json
+```
+
+The text file is useful for quick reading. The JSON file is intended for later UI work.
+
+The JSON structure is:
+
+```json
+{
+  "resource": "TCPIP::192.168.1.11::INSTR",
+  "scope_dir": "C:/",
+  "files": [
+    "example.png"
+  ]
+}
+```
+
 ## Retrieve a named file
 
 ```powershell
@@ -74,6 +101,6 @@ Typical save/list/retrieve workflow:
 
 ```powershell
 python scripts/mso64b_save_image.py --label probe-comp-ch2
-python scripts/mso64b_retrieve_file.py --list
+python scripts/mso64b_retrieve_file.py --list --save-list
 python scripts/mso64b_retrieve_file.py --scope-path "C:/YYYYMMDD-HHMMSS_mso64b_probe-comp-ch2.png"
 ```
