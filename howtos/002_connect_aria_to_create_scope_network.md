@@ -35,7 +35,7 @@ Serial: C062498
 Firmware: 2.16.15-release.3490
 ```
 
-Successful SCPI identity response:
+Successful PyVISA identity response:
 
 ```text
 TEKTRONIX,MSO64B,C062498,CF:91.1CT FV:2.16.15-release.3490
@@ -98,18 +98,25 @@ Approximate round trip times in milli-seconds:
     Minimum = 0ms, Maximum = 1ms, Average = 0ms
 ```
 
-## Step 4: Query the MSO64B identity
+## Step 4: Verify PyVISA access
 
-From the repository root:
-
-```powershell
-python scripts/mso64b_id.py --host 192.168.1.11
-```
-
-Confirmed result:
+Follow:
 
 ```text
-TEKTRONIX,MSO64B,C062498,CF:91.1CT FV:2.16.15-release.3490
+howtos/001_setup_pyvisa_connection.md
+```
+
+Confirmed VISA resources:
+
+```text
+TCPIP::192.168.1.11::INSTR
+TCPIP::192.168.1.11::hislip0,4880::INSTR
+```
+
+Use this resource for the scripts in this repository:
+
+```text
+TCPIP::192.168.1.11::INSTR
 ```
 
 ## What this proves
@@ -117,10 +124,8 @@ TEKTRONIX,MSO64B,C062498,CF:91.1CT FV:2.16.15-release.3490
 The complete control path works:
 
 ```text
-Aria -> dock Ethernet -> CREATE switch -> MSO64B -> SCPI socket
+Aria -> dock Ethernet -> CREATE switch -> MSO64B -> PyVISA resource
 ```
-
-The MSO64B can now be controlled by small scripts over Ethernet.
 
 ## Notes
 
@@ -131,5 +136,3 @@ The linked Tektronix Programmer Manual in the README may not match the installed
 ```text
 2.16.15-release.3490
 ```
-
-A later documentation pass should locate the current Tektronix programmer manual matching firmware 2.16.x if available.
