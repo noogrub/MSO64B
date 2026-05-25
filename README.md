@@ -32,6 +32,14 @@ scripts/mso64b_id.py
 
 That first task verifies that a computer can communicate with the MSO64B over Ethernet and ask the instrument to identify itself using the SCPI command `*IDN?`.
 
+## Official Tektronix documentation
+
+Official Tektronix documentation is the source of truth for instrument limits, command syntax, and remote-control behavior.
+
+- [5/6 Series MSO Programmer Manual, including MSO64](https://download.tek.com/manual/5_6-Series-MSO54-MSO56-MSO58-MSO58L-MSO64-Programmer-Manual_EN-US_077130505.pdf)
+
+This repository should link to vendor documentation rather than storing local copies of Tektronix PDFs.
+
 ## Intended audience
 
 This repository is for CREATE lab members who need practical MSO64B procedures during bench work. It favors clear text, reproducible commands, and small examples over menu memorization.
