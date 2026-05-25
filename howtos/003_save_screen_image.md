@@ -1,3 +1,4 @@
+
 # HOWTO 003: Save an MSO64B Screen Image
 
 ## Purpose
@@ -20,8 +21,10 @@ scripts/mso64b_save_image.py
 ## Command
 
 ```powershell
-python scripts/mso64b_save_image.py
+python scripts/mso64b_save_image.py --label probe-comp-ch2
 ```
+
+## Default behavior
 
 Default VISA resource:
 
@@ -29,25 +32,45 @@ Default VISA resource:
 TCPIP::192.168.1.11::INSTR
 ```
 
-Default scope-side output path:
+Default scope-side output directory:
 
 ```text
-C:/CREATE_test.png
+C:/
+```
+
+Default generated filename pattern:
+
+```text
+YYYYMMDD-HHMMSS_mso64b_<label>.png
+```
+
+Example generated scope-side path:
+
+```text
+C:/20260525-183742_mso64b_probe-comp-ch2.png
+```
+
+## Exact output path
+
+To force a specific scope-side filename:
+
+```powershell
+python scripts/mso64b_save_image.py --scope-path "C:/CREATE_test.png"
 ```
 
 ## Confirmed CREATE result
 
+The save command reports success when `*OPC?` returns `1`.
+
+Example:
+
 ```text
 Connected to: TEKTRONIX,MSO64B,C062498,CF:91.1CT FV:2.16.15-release.3490
-Sending: SAVE:IMAGE "C:/CREATE_test.png"
+Sending: SAVE:IMAGE "C:/20260525-183742_mso64b_probe-comp-ch2.png"
 *OPC? response: 1
-Saved screen image on scope: C:/CREATE_test.png
+Saved screen image on scope: C:/20260525-183742_mso64b_probe-comp-ch2.png
 ```
 
-## Next step
+## Retrieve next
 
-Retrieve the saved file with:
-
-```text
-howtos/004_retrieve_screen_image.md
-```
+Use `howtos/004_retrieve_screen_image.md` to list files on the scope and retrieve the saved PNG.

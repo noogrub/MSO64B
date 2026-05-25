@@ -1,22 +1,21 @@
-# MSO64B Patch Notes
 
-This ZIP is structured for extraction at the repository root.
+# Patch Notes
 
-It contains repository-relative paths only. When extracted into an existing clone, Windows should prompt before overwriting existing files.
+This overlay updates the MSO64B PyVISA workflow.
 
-## Intended use
+## Changes
 
-From the local repo root:
+- `mso64b_save_image.py` now generates unique scope-side PNG filenames by default.
+- Generated names use `YYYYMMDD-HHMMSS_mso64b_<label>.png`.
+- `mso64b_retrieve_file.py` can list scope-side files with `--list`.
+- Retrieval writes to `img/` by default.
+- HOWTO 003 and HOWTO 004 document the save/list/retrieve workflow.
+- README now describes the unique screenshot naming pattern.
 
-1. Extract this ZIP into the repository root.
-2. Accept overwrite prompts.
-3. Review changes with `git status` and `git diff`.
-4. Commit and push locally.
+## Typical command sequence
 
-## Main changes
-
-- Document PyVISA as the primary scripted interface.
-- Preserve the confirmed CREATE bench VISA resource.
-- Add save and retrieve scripts for screen images.
-- Add HOWTO 004 for retrieving a saved screen image.
-- Keep generated images and data under ignored local paths such as `img/`.
+```powershell
+python scripts/mso64b_save_image.py --label probe-comp-ch2
+python scripts/mso64b_retrieve_file.py --list
+python scripts/mso64b_retrieve_file.py --scope-path "C:/YYYYMMDD-HHMMSS_mso64b_probe-comp-ch2.png"
+```

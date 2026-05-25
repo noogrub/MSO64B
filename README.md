@@ -1,3 +1,4 @@
+
 # MSO64B
 
 Concise Tektronix MSO64B working notes for CREATE lab use.
@@ -43,9 +44,10 @@ howtos/004_retrieve_screen_image.md
 The confirmed screenshot path is:
 
 ```text
-SAVE:IMAGE "C:/CREATE_test.png"
-FILESystem:READFile "C:/CREATE_test.png"
-local output: img/CREATE_test.png
+SAVE:IMAGE "C:/YYYYMMDD-HHMMSS_mso64b_<label>.png"
+FILESystem:DIR?
+FILESystem:READFile "C:/YYYYMMDD-HHMMSS_mso64b_<label>.png"
+local output: img/YYYYMMDD-HHMMSS_mso64b_<label>.png
 ```
 
 ## Official Tektronix documentation

@@ -1,10 +1,11 @@
+
 # HOWTO 004: Retrieve an MSO64B Screen Image
 
 ## Purpose
 
-Retrieve a file from the MSO64B filesystem using PyVISA and the documented SCPI command `FILESystem:READFile`.
+List or retrieve files from the MSO64B filesystem using PyVISA and the documented SCPI commands `FILESystem:DIR?` and `FILESystem:READFile`.
 
-This procedure copies the image saved by `SAVE:IMAGE` from the scope to the local computer.
+This procedure copies an image saved by `SAVE:IMAGE` from the scope to the local computer.
 
 ## Required setup
 
@@ -17,31 +18,49 @@ This procedure copies the image saved by `SAVE:IMAGE` from the scope to the loca
 scripts/mso64b_retrieve_file.py
 ```
 
-## Command
+## List files on the scope
 
 ```powershell
-python scripts/mso64b_retrieve_file.py
+python scripts/mso64b_retrieve_file.py --list
 ```
 
-Default VISA resource:
+Default scope-side directory:
 
 ```text
-TCPIP::192.168.1.11::INSTR
+C:/
 ```
 
-Default scope-side input path:
+To list a different scope-side directory:
 
-```text
-C:/CREATE_test.png
+```powershell
+python scripts/mso64b_retrieve_file.py --list --scope-dir "C:/Temp"
 ```
 
-Default local output path:
+## Retrieve a named file
+
+```powershell
+python scripts/mso64b_retrieve_file.py --scope-path "C:/20260525-183742_mso64b_probe-comp-ch2.png"
+```
+
+By default, the local file is written to:
 
 ```text
-img/CREATE_test.png
+img/<same-filename>
+```
+
+Example:
+
+```text
+img/20260525-183742_mso64b_probe-comp-ch2.png
 ```
 
 The `img/` directory is ignored by git.
+
+## Exact local output path
+
+```powershell
+python scripts/mso64b_retrieve_file.py --scope-path "C:/CREATE_test.png" --output "img/CREATE_test.png"
+```
 
 ## Confirmed result
 
@@ -49,11 +68,12 @@ The retrieved file opens as a valid PNG image of the MSO64B display.
 
 The confirmed test image showed the probe-comp waveform on CH2, roughly 0 to 250 mV, with the display set to 400 us/div.
 
-## Command pair
+## Command sequence
 
-To save and retrieve the current screen:
+Typical save/list/retrieve workflow:
 
 ```powershell
-python scripts/mso64b_save_image.py
-python scripts/mso64b_retrieve_file.py
+python scripts/mso64b_save_image.py --label probe-comp-ch2
+python scripts/mso64b_retrieve_file.py --list
+python scripts/mso64b_retrieve_file.py --scope-path "C:/YYYYMMDD-HHMMSS_mso64b_probe-comp-ch2.png"
 ```
