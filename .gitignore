@@ -5,6 +5,7 @@ __pycache__/
 .venv/
 venv/
 env/
+pdf/
 
 # Local output from scope captures and data exports
 img/
