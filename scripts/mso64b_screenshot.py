@@ -28,6 +28,28 @@ def send_command(connection, command):
     connection.sendall(command.encode("ascii"))
 
 
+def drain_socket(connection, drain_timeout_seconds, debug_enabled):
+    """Drain stale response bytes left in the instrument socket queue."""
+    connection.settimeout(drain_timeout_seconds)
+    total_bytes = 0
+
+    while True:
+        try:
+            chunk = connection.recv(65536)
+        except socket.timeout:
+            break
+
+        if not chunk:
+            break
+
+        total_bytes = total_bytes + len(chunk)
+
+    if debug_enabled:
+        print(f"Drained stale bytes before command sequence: {total_bytes}")
+
+    return total_bytes
+
+
 def query_text(connection, command, timeout_seconds):
     send_command(connection, command)
     connection.settimeout(timeout_seconds)
@@ -100,6 +122,7 @@ def capture_screenshot(hostname, port, output_path, scope_image_path, timeout_se
 
     with socket.create_connection((hostname, port), timeout=timeout_seconds) as connection:
         connection.settimeout(timeout_seconds)
+        drain_socket(connection, 0.25, debug_enabled)
 
         identity = query_text(connection, "*IDN?", timeout_seconds)
         print(f"Connected to: {identity}")
