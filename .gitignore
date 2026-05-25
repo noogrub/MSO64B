@@ -1,0 +1,24 @@
+# Python cache and local environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Local output from scope captures and data exports
+img/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.csv
+*.tsv
+*.dat
+*.bin
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
