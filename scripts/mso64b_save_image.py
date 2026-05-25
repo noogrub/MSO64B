@@ -1,52 +1,17 @@
-
 #!/usr/bin/env python3
-"""
-Save a Tektronix MSO64B screen image using PyVISA.
-
-The script creates a unique scope-side PNG filename by default:
-
-    C:/YYYYMMDD-HHMMSS_mso64b_<label>.png
-
-It uses the documented SCPI method:
-
-    SAVE:IMAGE "<scope-side path>"
-    *OPC?
-
-The image is saved on the oscilloscope filesystem. Use
-scripts/mso64b_retrieve_file.py to list or retrieve saved files.
-"""
+"""Save a Tektronix MSO64B screen image using PyVISA."""
 
 import argparse
-import datetime
-import re
 import sys
 
-import pyvisa
-
-
-DEFAULT_RESOURCE = "TCPIP::192.168.1.11::INSTR"
-DEFAULT_SCOPE_DIR = "C:/"
-DEFAULT_LABEL = "screen"
-
-
-def sanitize_label(label):
-    cleaned_label = re.sub(r"[^A-Za-z0-9_.-]+", "-", label.strip())
-    cleaned_label = cleaned_label.strip("-._")
-    if not cleaned_label:
-        return DEFAULT_LABEL
-    return cleaned_label
-
-
-def build_scope_path(scope_dir, label):
-    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    safe_label = sanitize_label(label)
-
-    normalized_scope_dir = scope_dir.replace("\\", "/")
-    if not normalized_scope_dir.endswith("/"):
-        normalized_scope_dir = normalized_scope_dir + "/"
-
-    filename = f"{timestamp}_mso64b_{safe_label}.png"
-    return normalized_scope_dir + filename
+from mso64b.config import (
+    DEFAULT_LABEL,
+    DEFAULT_RESOURCE,
+    DEFAULT_SCOPE_DIR,
+    DEFAULT_TIMEOUT_MS,
+)
+from mso64b.instrument import open_scope, query_identity, save_image
+from mso64b.naming import build_scope_image_path, normalize_scope_path
 
 
 def build_argument_parser():
@@ -76,8 +41,8 @@ def build_argument_parser():
     parser.add_argument(
         "--timeout-ms",
         type=int,
-        default=10000,
-        help="VISA timeout in milliseconds. Default: 10000"
+        default=DEFAULT_TIMEOUT_MS,
+        help=f"VISA timeout in milliseconds. Default: {DEFAULT_TIMEOUT_MS}"
     )
     return parser
 
@@ -87,29 +52,26 @@ def main():
     args = parser.parse_args()
 
     if args.scope_path:
-        scope_path = args.scope_path.replace("\\", "/")
+        scope_path = normalize_scope_path(args.scope_path)
     else:
-        scope_path = build_scope_path(args.scope_dir, args.label)
+        scope_path = build_scope_image_path(args.scope_dir, args.label)
 
-    resource_manager = pyvisa.ResourceManager("@py")
-    scope = resource_manager.open_resource(args.resource)
-    scope.timeout = args.timeout_ms
+    try:
+        scope = open_scope(args.resource, args.timeout_ms)
+        identity = query_identity(scope)
+        print(f"Connected to: {identity}")
 
-    identity = scope.query("*IDN?").strip()
-    print(f"Connected to: {identity}")
+        command = f'SAVE:IMAGE "{scope_path}"'
+        print(f"Sending: {command}")
 
-    command = f'SAVE:IMAGE "{scope_path}"'
-    print(f"Sending: {command}")
-    scope.write(command)
+        saved_scope_path = save_image(scope, scope_path)
+        print("*OPC? response: 1")
+        print(f"Saved screen image on scope: {saved_scope_path}")
 
-    operation_complete = scope.query("*OPC?").strip()
-    print(f"*OPC? response: {operation_complete}")
-
-    if operation_complete != "1":
-        print("ERROR: SAVE:IMAGE did not report completion.", file=sys.stderr)
+    except Exception as error:
+        print(f"ERROR: {error}", file=sys.stderr)
         return 1
 
-    print(f"Saved screen image on scope: {scope_path}")
     return 0
 
 

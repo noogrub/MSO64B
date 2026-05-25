@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MSO64B Local Bench UI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>MSO64B Local Bench UI</h1>
+
+    <section class="status">
+      <p><strong>Instrument:</strong> {{ identity }}</p>
+      <p><strong>Scope directory:</strong> {{ scope_dir }}</p>
+      {% if message %}
+      <p class="message">{{ message }}</p>
+      {% endif %}
+      {% if error %}
+      <p class="error">{{ error }}</p>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h2>Capture and retrieve screenshot</h2>
+      <form method="post" action="{{ url_for('capture') }}">
+        <label for="label">Label</label>
+        <input id="label" name="label" type="text" value="probe-comp-ch2">
+        <button type="submit">Capture Screenshot</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Scope files</h2>
+      <p>Refresh the page to update this list.</p>
+      <form method="post" action="{{ url_for('retrieve') }}">
+        <label for="filename">Scope file</label>
+        <select id="filename" name="filename">
+          {% for filename in scope_files %}
+          <option value="{{ filename }}">{{ filename }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">Retrieve Selected File</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Local retrieved images</h2>
+      {% if local_images %}
+        <div class="image-grid">
+          {% for filename in local_images %}
+          <figure>
+            <a href="{{ url_for('image_file', filename=filename) }}" target="_blank">
+              <img src="{{ url_for('image_file', filename=filename) }}" alt="{{ filename }}">
+            </a>
+            <figcaption>{{ filename }}</figcaption>
+          </figure>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>No local images found.</p>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

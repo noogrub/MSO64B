@@ -1,0 +1,7 @@
+"""Default configuration for the CREATE MSO64B bench setup."""
+
+DEFAULT_RESOURCE = "TCPIP::192.168.1.11::INSTR"
+DEFAULT_SCOPE_DIR = "C:/"
+DEFAULT_OUTPUT_DIR = "img"
+DEFAULT_TIMEOUT_MS = 10000
+DEFAULT_LABEL = "screen"

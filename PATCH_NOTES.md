@@ -1,24 +1,22 @@
-
 # Patch Notes
 
-This overlay adds saved directory listings for the MSO64B retrieval workflow.
+This overlay fixes the local UI module syntax and improves Windows launch.
 
 ## Changes
 
-- `mso64b_retrieve_file.py` now supports `--save-list` with `--list`.
-- Saved listings are written under `img/`.
-- The script writes both text and JSON listing files.
-- HOWTO 004 documents saved listings and the JSON structure.
+- Fixed escaped quote characters in `mso64b/*.py`.
+- Updated `scripts/mso64b_ui.py` so it can run directly with `python scripts/mso64b_ui.py`.
+- Added `run_mso64b_ui.bat` for simple Windows startup.
+- Updated README and HOWTO 005 to point normal users to the batch launcher.
 
-## Example
-
-```powershell
-python scripts/mso64b_retrieve_file.py --list --save-list
-```
-
-Default outputs:
+## Run
 
 ```text
-img/YYYYMMDD-HHMMSS_mso64b_directory_listing.txt
-img/YYYYMMDD-HHMMSS_mso64b_directory_listing.json
+run_mso64b_ui.bat
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000
 ```

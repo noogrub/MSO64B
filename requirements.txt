@@ -1,2 +1,3 @@
 pyvisa>=1.16
 pyvisa-py>=0.7
+flask>=3.0
