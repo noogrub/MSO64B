@@ -18,7 +18,7 @@ The first target is Ethernet communication with the instrument. Once that works,
 ```text
 howtos/     Short task-focused instructions
 scripts/    Small Python utilities for repeatable instrument actions
-notes/      Lab context and project-level notes
+notes/      Lab context, project notes, and out-of-path gotchas
 ```
 
 ## Starting point
@@ -31,6 +31,16 @@ scripts/mso64b_id.py
 ```
 
 That first task verifies that a computer can communicate with the MSO64B over Ethernet and ask the instrument to identify itself using the SCPI command `*IDN?`.
+
+## Gotchas
+
+Known bench traps are kept out of the main HOWTO path and collected here:
+
+```text
+notes/gotchas.md
+```
+
+Use that file for practical observations that explain why an otherwise simple procedure may fail.
 
 ## Official Tektronix documentation
 
