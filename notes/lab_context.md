@@ -18,18 +18,30 @@ Each note should answer:
 4. What result should they expect?
 5. What does this teach about the MSO64B?
 
+## Interface rule
+
+Use PyVISA with `pyvisa-py` for scripted control.
+
+Confirmed CREATE bench resource:
+
+```text
+TCPIP::192.168.1.11::INSTR
+```
+
 ## Style
 
-Use direct technical prose. Prefer text commands, filenames, and observable results. Avoid relying on memory of touch-screen menu locations when a script or saved setup can make the task repeatable.
+Use direct technical prose. Prefer documented SCPI commands through PyVISA, filenames, and observable results. Avoid relying on memory of touch-screen menu locations when a script or saved setup can make the task repeatable.
 
 ## Early task sequence
 
 Planned early tasks:
 
-1. Connect to the MSO64B over Ethernet and query identity.
-2. Save a screenshot of the current front-panel display.
-3. Export a waveform for Python analysis.
-4. Configure a basic edge trigger.
-5. Configure a pulse-width trigger.
+1. Set up PyVISA access to the MSO64B.
+2. Connect Aria to the CREATE instrument network.
+3. Save the current screen image on the MSO64B using `SAVE:IMAGE`.
+4. Add file readback only after the PyVISA method is cleanly confirmed.
+5. Export a waveform for Python analysis.
+6. Configure a basic edge trigger.
+7. Configure a pulse-width trigger.
 
 These tasks should be added as the bench work needs them.
