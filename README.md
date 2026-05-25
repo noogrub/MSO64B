@@ -4,21 +4,29 @@ Concise Tektronix MSO64B working notes for CREATE lab use.
 
 This repository preserves small, repeatable oscilloscope tasks as HOWTOs and scripts. The goal is to keep MSO64B knowledge available to the lab after individual students graduate, without relying on one person as the permanent menu expert.
 
-The working pattern is simple:
+## Working method
 
-- One bench task
-- One short HOWTO
-- One small script when useful
-- One lab-meeting-ready explanation
+Use PyVISA with the pure-Python backend `pyvisa-py` for scripted control.
 
-The first target is Ethernet communication with the instrument. Once that works, later notes can cover screenshots, waveform export, edge triggering, pulse-width triggering, and FieldNet_PLL capture examples.
+Confirmed CREATE bench resource:
+
+```text
+TCPIP::192.168.1.11::INSTR
+```
+
+Confirmed instrument identity:
+
+```text
+TEKTRONIX,MSO64B,C062498,CF:91.1CT FV:2.16.15-release.3490
+```
 
 ## Repository layout
 
 ```text
-howtos/     Short task-focused instructions
-scripts/    Small Python utilities for repeatable instrument actions
-notes/      Lab context, project notes, and out-of-path gotchas
+howtos/       Short task-focused instructions
+scripts/      Small Python utilities for repeatable instrument actions
+notes/        Lab context and project-level notes
+requirements.txt
 ```
 
 ## Starting point
@@ -26,27 +34,18 @@ notes/      Lab context, project notes, and out-of-path gotchas
 Begin with:
 
 ```text
-howtos/001_connect_and_identify_scope.md
-scripts/mso64b_id.py
+howtos/001_setup_pyvisa_connection.md
+scripts/mso64b_save_image.py
 ```
 
-That first task verifies that a computer can communicate with the MSO64B over Ethernet and ask the instrument to identify itself using the SCPI command `*IDN?`.
-
-## Gotchas
-
-Known bench traps are kept out of the main HOWTO path and collected here:
-
-```text
-notes/gotchas.md
-```
-
-Use that file for practical observations that explain why an otherwise simple procedure may fail.
+The first scripted task connects to the MSO64B through PyVISA and saves the current screen image to the scope filesystem using the documented SCPI command `SAVE:IMAGE`.
 
 ## Official Tektronix documentation
 
 Official Tektronix documentation is the source of truth for instrument limits, command syntax, and remote-control behavior.
 
 - [5/6 Series MSO Programmer Manual, including MSO64](https://download.tek.com/manual/5_6-Series-MSO54-MSO56-MSO58-MSO58L-MSO64-Programmer-Manual_EN-US_077130505.pdf)
+- [5/6 Series MSO Printable Help, including MSO64](https://download.tek.com/manual/5-6-Series-MSO-MSO54-MSO56-MSO58LP-MSO64-Printable-Help_EN-US_077130303.pdf)
 
 This repository should link to vendor documentation rather than storing local copies of Tektronix PDFs.
 
