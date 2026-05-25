@@ -18,7 +18,8 @@ import sys
 import time
 
 
-DEFAULT_SCOPE_IMAGE_PATH = "C:/Temp/mso64b_screen.png"
+DEFAULT_SCOPE_IMAGE_PATH = "C:/CREATE_test.png"
+PNG_SIGNATURE = bytes([137, 80, 78, 71, 13, 10, 26, 10])
 
 
 def send_command(connection, command):
@@ -30,7 +31,7 @@ def send_command(connection, command):
 def query_text(connection, command, timeout_seconds):
     send_command(connection, command)
     connection.settimeout(timeout_seconds)
-    response = connection.recv(4096)
+    response = connection.recv(65536)
     return response.decode("utf-8", errors="replace").strip()
 
 
@@ -84,7 +85,15 @@ def strip_possible_scpi_block_header(data):
     return data[payload_start:payload_end]
 
 
-def capture_screenshot(hostname, port, output_path, scope_image_path, timeout_seconds):
+def trim_to_png_payload(data):
+    """Trim leading non-PNG bytes if the scope prepends text or status data."""
+    png_start = data.find(PNG_SIGNATURE)
+    if png_start < 0:
+        return data
+    return data[png_start:]
+
+
+def capture_screenshot(hostname, port, output_path, scope_image_path, timeout_seconds, debug_enabled):
     output_directory = os.path.dirname(output_path)
     if output_directory:
         os.makedirs(output_directory, exist_ok=True)
@@ -95,20 +104,42 @@ def capture_screenshot(hostname, port, output_path, scope_image_path, timeout_se
         identity = query_text(connection, "*IDN?", timeout_seconds)
         print(f"Connected to: {identity}")
 
-        send_command(connection, f'SAVe:IMAGe "{scope_image_path}"')
+        print(f"Saving image on scope as: {scope_image_path}")
+        send_command(connection, f'SAVE:IMAGE "{scope_image_path}"')
         operation_complete = query_text(connection, "*OPC?", timeout_seconds)
-        if operation_complete != "1":
-            print(f"WARNING: Unexpected *OPC? response: {operation_complete}", file=sys.stderr)
+        print(f"*OPC? response after SAVE:IMAGE: {operation_complete}")
 
         time.sleep(0.5)
 
-        send_command(connection, f'FILESystem:READFile "{scope_image_path}"')
-        image_data = read_until_timeout(connection, timeout_seconds)
+        directory_listing = query_text(connection, "FILESystem:DIR?", timeout_seconds)
+        if os.path.basename(scope_image_path) in directory_listing:
+            print("Scope-side file is visible in FILESystem:DIR?.")
+        else:
+            print("WARNING: Scope-side file was not found in FILESystem:DIR?.", file=sys.stderr)
 
-    image_data = strip_possible_scpi_block_header(image_data)
+        print(f"Reading scope-side file: {scope_image_path}")
+        send_command(connection, f'FILESystem:READFile "{scope_image_path}"')
+        raw_data = read_until_timeout(connection, timeout_seconds)
+
+    if debug_enabled:
+        print(f"Raw bytes received after READFile: {len(raw_data)}")
+        if raw_data:
+            preview = raw_data[:32]
+            print(f"First raw bytes: {preview!r}")
+
+    image_data = strip_possible_scpi_block_header(raw_data)
+    image_data = trim_to_png_payload(image_data)
+
+    if debug_enabled:
+        print(f"Bytes after header/PNG trimming: {len(image_data)}")
+        if image_data:
+            print(f"First trimmed bytes: {image_data[:32]!r}")
 
     if not image_data:
         raise RuntimeError("No image data was received from the oscilloscope.")
+
+    if not image_data.startswith(PNG_SIGNATURE):
+        raise RuntimeError("Received data does not start with a PNG signature.")
 
     with open(output_path, "wb") as output_file:
         output_file.write(image_data)
@@ -147,6 +178,11 @@ def build_argument_parser():
         default=10.0,
         help="Socket timeout in seconds. Default: 10.0."
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Print byte counts and byte previews while debugging readback."
+    )
     return parser
 
 
@@ -161,6 +197,7 @@ def main():
             args.output,
             args.scope_path,
             args.timeout,
+            args.debug,
         )
     except (OSError, RuntimeError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
